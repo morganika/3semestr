@@ -1,0 +1,205 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+
+class list
+{
+public:
+	char namea[100], nameb[100];
+	int years, months, days, hours, minutes;
+	int dateandtime, date, time, howlong, ID;
+
+	
+	list(char from[100], char to[100],  int years, int months, int days, int hours, int minutes, int howlong) //конструктор
+	{
+		strcpy(this->namea, namea);
+		strcpy(this->nameb, nameb);
+		this->years = years;
+		this->months = months;
+		this->days = days;
+		this->hours = hours;
+		this->minutes = minutes;
+		this->howlong = howlong;
+		date = days + months * 30 + years * 365;
+		time = hours * 60 + minutes;
+		dateandtime = time + (date - 1) * 1440;
+	}
+	void listcout() {
+		cout << ID << "   " << namea << " " << nameb << " " << days << "." << months << "." << years << "   " << hours << ":" << minutes << "    " << howlong;
+	}
+};
+
+
+int what() {
+	int input;
+	cout << "Что вам нужно?" << endl;
+	cout << "1 - вывести полный список звонков"<<endl;
+	cout << "2 - добавить по номеру"<<endl;
+	cout << "3 - удалить по номеру" << endl;
+	cout << "4 - вывод с даты по дату" << endl;
+	cout << "5 - сортировка по давности" << endl;
+	cout << "6 - сортировка по длительности" << endl;
+	cout << "7 - вывод от конкретного человека" << endl;
+	cout << "8 - вывод к конкретному человеку" << endl;
+
+	cin >> input;
+	return input;
+}
+
+
+
+int main()
+{
+	vector<list> call;
+	vector<list>::const_iterator it = call.begin();
+
+
+	//открываем файл
+	ifstream inputfile;
+	inputfile.exceptions(ifstream::badbit | ifstream::failbit);
+
+	int i, number, day, month, year, hour, minute, howlong, ID;
+	char from[100], to[100];
+
+	try {
+		inputfile.open("INPUT.TXT");
+		//считываем данные из файла
+		while (i) {
+			inputfile >> number;
+			if (number == i) {
+				inputfile >> from >> to >> day >> month >> year >> hour >> minute >> howlong;
+				list addition(from, to, day, month, year, hour, minute, howlong);
+				addition.ID = i;
+				call.push_back(addition);
+				i++;
+			}
+			else i = 0;
+		}
+
+	}
+	catch (const ifstream::failure & ex) {
+		cout << ex.what() << endl;
+		cout << ex.code() << endl;
+		cout << "Ошибка." << endl;
+	}
+
+
+	int number = what();
+
+
+	//  Вывод полного списка звонков
+	if (number == 1) {
+		for (i = 0; i < call.size(); i++) {
+			call.at(i).listcout();
+		}
+		number = what();
+	}
+
+
+	//  Добавление по номеру
+	if (number == 2) {
+		cout << "Какой номер добавить?" << endl;
+		cin >> number;
+		cout << "Введите данные:" << endl;
+		cin >> from >> to >> day >> month >> year >> hour >> minute >> howlong >> ID;
+		list addition(from, to, day, month, year, hour, minute, howlong);
+		addition.ID = ID;
+		advance(it, number);
+		call.insert(it, addition);
+		it = call.begin();
+	}
+
+
+	// Удаление по номеру
+	else if (number == 3) {
+		cout << "Какой номер вы хотите удалить?" << endl;
+		cin >> number;
+		advance(it, number);
+		call.erase(it);
+		it = call.begin();
+	}
+
+	//  Вывод с даты по дату
+	else if (number == 4) {
+		int mindate, maxdate;
+		cout << "Введите минимальную дату " << endl;
+		cin >> day >> month >> year;
+		mindate = day + month * 30 + year * 365;
+		cout << "Введите максимальную дату" << endl;
+		cin >> day >> month >> year;
+		maxdate = day + month * 30 + year * 365;
+
+		cout << "Результаты отбора " << endl;
+		for (i = 0; i < call.size(); i++) {
+			if (call[i].date >= mindate && call[i].date <= maxdate) {
+				call.at(i).listcout();
+			}
+		}
+	}
+
+	// Сортировка по давности
+	else if (number == 5) {
+		cout << "Сортировка по дате:" << endl;
+		sort(call.begin(), call.end(), [](const list &a, const list &b) {
+			return a.date < b.date;
+		});
+		for (i = 0; i < call.size(); i++) {
+			call.at(i).listcout();
+		}
+		cout << "\nСортировка по времени:" << endl;
+		sort(call.begin(), call.end(), [](const list &a, const list &b) {
+			return a.time < b.time;
+		});
+		for (i = 0; i < call.size(); i++) {
+			call.at(i).listcout();
+		}
+		cout << "\nСортировка по дате и времени:" << endl;
+		sort(call.begin(), call.end(), [](const list &a, const list &b) {
+			return a.dateandtime < b.dateandtime;
+		});
+		for (i = 0; i < call.size(); i++) {
+			call.at(i).listcout();
+		}
+	}
+
+	// Сортировка по длительности
+	else if (number == 6) {
+		cout << "\nСортировка по длительности:" << endl;
+		sort(call.begin(), call.end(), [](const list &a, const list &b) {
+			return a.howlong < b.howlong;
+		});
+		for (i = 0; i < call.size(); i++) {
+			call.at(i).listcout();
+		}
+		number = what();
+	}
+
+	// Вывод от конкретного человека
+	else if (number == 7) {
+		cout << "Введите имя "<<endl;
+		cin >> namea;
+		for (i = 0; i < call.size(); i++) {
+			if (call.at(i).namea == namea) {
+				call.at(i).listcout();
+			}
+		}
+	}
+
+	// Вывод к конкретному человеку
+	else if (number == 8) {
+		cout << "Введите имя "<<endl;
+		cin >> nameb;
+		for (i = 0; i < call.size(); i++) {
+			if (call.at(i).nameb == nameb) {
+				call.at(i).listcout();
+			}
+		}
+	}
+
+	return 0;
+
+}
